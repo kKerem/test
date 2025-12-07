@@ -1,35 +1,22 @@
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
-ARG user=www-data
-ARG uid=1000
+# Sistem paketleri ve sık gereken PHP eklentileri
+RUN apt-get update && apt-get install -y git unzip libzip-dev \
+    && docker-php-ext-install zip pdo pdo_mysql
 
-WORKDIR /var/www/html
+WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Önce sadece composer dosyalarını kopyala (build cache kazanımı için)
+COPY composer.json composer.lock /app/
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# composer'ı kur ve izinleri ayarla
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN groupadd -g ${uid} ${user} || true \
-    && useradd -u ${uid} -g ${user} -m ${user} || true \
-    && chown -R ${user}:${user} /var/www
+# Bellek sorunu çıkarsa COMPOSER_MEMORY_LIMIT kullanabilirsin
+RUN composer install --no-interaction --prefer-dist --no-scripts
 
-USER ${user}
+# Sonra tüm projeyi kopyala
+COPY . /app
 
-COPY . /var/www/html
-
-RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist --no-scripts; fi
-
-EXPOSE 9000
-
-CMD ["php-fpm"]
-
-
+# (opsiyonel) prod için vendor'ı önceden yükleyip --no-dev kullan
