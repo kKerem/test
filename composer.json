@@ -1,0 +1,16 @@
+{
+    "name": "prensmedya/site-builder",
+    "description": "Sade PHP ile sürükle-bırak site oluşturucu (MVP çekirdek)",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "ext-pdo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
+
+
