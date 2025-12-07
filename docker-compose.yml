@@ -15,11 +15,15 @@ services:
       APP_DEBUG: "true"
       APP_URL: http://localhost:8000
 
-      DB_HOST: switchyard.proxy.rlwy.net
-      DB_PORT: 35180
-      DB_DATABASE: railway
-      DB_USERNAME: root
-      DB_PASSWORD: YtNTAAqzyzDiBCIGFwTRglORSvhfDauU
+      # Lokal geliştirme için PORT
+      PORT: 8080
+
+      # Eğer lokalda Railway DB'ye bağlanıyorsan bırak, yoksa lokal DB ayarlarını kullan
+      # DB_HOST: switchyard.proxy.rlwy.net
+      # DB_PORT: 35180
+      # DB_DATABASE: railway
+      # DB_USERNAME: root
+      # DB_PASSWORD: <secret>
 
       REDIS_HOST: redis
     depends_on:
@@ -43,5 +47,3 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-
-volumes: {}
