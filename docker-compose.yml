@@ -13,12 +13,12 @@ services:
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
-      APP_URL: http://localhost
+      APP_URL: switchyard.proxy.rlwy.net
       DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: prensmedya
-      DB_USERNAME: prensmedya
-      DB_PASSWORD: secret
+      DB_PORT: 35180
+      DB_DATABASE: railway
+      DB_USERNAME: root
+      DB_PASSWORD: YtNTAAqzyzDiBCIGFwTRglORSvhfDauU
       REDIS_HOST: redis
     depends_on:
       - db
