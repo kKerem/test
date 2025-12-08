@@ -11,16 +11,69 @@ class Database
 {
     private static ?PDO $pdo = null;
 
+    /**
+     * Ortam değişkenini $_ENV veya getenv üzerinden okur.
+     */
+    private static function env(string $key, ?string $default = null): ?string
+    {
+        $value = $_ENV[$key] ?? getenv($key);
+        return $value !== false && $value !== null ? $value : $default;
+    }
+
+    /**
+     * Railway/MySQL ortam değişkenlerini normalize eder.
+     */
+    private static function resolveConfig(): array
+    {
+        // Önce klasik .env beklentileri
+        $host = self::env('DB_HOST');
+        $port = self::env('DB_PORT');
+        $db = self::env('DB_DATABASE');
+        $user = self::env('DB_USERNAME');
+        $pass = self::env('DB_PASSWORD');
+
+        // Railway/MySQL eklentisi isimleri
+        $host ??= self::env('MYSQL_HOST') ?? self::env('MYSQLHOST') ?? self::env('RAILWAY_PRIVATE_DOMAIN') ?? self::env('RAILWAY_TCP_PROXY_DOMAIN');
+        $port ??= self::env('MYSQL_PORT') ?? self::env('MYSQLPORT') ?? self::env('RAILWAY_TCP_PROXY_PORT');
+        $db ??= self::env('MYSQL_DATABASE') ?? self::env('MYSQLDATABASE');
+        $user ??= self::env('MYSQL_USER') ?? self::env('MYSQLUSER');
+        $pass ??= self::env('MYSQL_PASSWORD') ?? self::env('MYSQLPASSWORD') ?? self::env('MYSQL_ROOT_PASSWORD');
+
+        // MYSQL_URL veya MYSQL_PUBLIC_URL varsa parse et
+        $url = self::env('MYSQL_URL') ?? self::env('MYSQL_PUBLIC_URL');
+        if ($url) {
+            $parsed = parse_url($url);
+            if (is_array($parsed)) {
+                $host ??= $parsed['host'] ?? null;
+                $port ??= isset($parsed['port']) ? (string)$parsed['port'] : null;
+                $user ??= $parsed['user'] ?? null;
+                $pass ??= $parsed['pass'] ?? null;
+                if (($parsed['path'] ?? null) !== null) {
+                    $db ??= ltrim($parsed['path'], '/');
+                }
+            }
+        }
+
+        // Varsayılanlar (lokal geliştirme)
+        return [
+            'host' => $host ?? 'localhost',
+            'port' => $port ?? '3306',
+            'db' => $db ?? 'prensmedya',
+            'user' => $user ?? 'root',
+            'pass' => $pass ?? 'root',
+        ];
+    }
+
     public static function connection(): PDO
     {
         if (self::$pdo === null) {
-            // MAMP / lokal geliştirme için varsayılanlar:
-            // host=localhost, db=prensmedya, user=root, pass=""
-            $host = $_ENV['DB_HOST'] ?? 'localhost';
-            $port = $_ENV['DB_PORT'] ?? '3306';
-            $db = $_ENV['DB_DATABASE'] ?? 'prensmedya';
-            $user = $_ENV['DB_USERNAME'] ?? 'root';
-            $pass = $_ENV['DB_PASSWORD'] ?? 'root';
+            $config = self::resolveConfig();
+
+            $host = $config['host'];
+            $port = $config['port'];
+            $db = $config['db'];
+            $user = $config['user'];
+            $pass = $config['pass'];
 
             $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
 
