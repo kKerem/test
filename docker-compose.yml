@@ -19,12 +19,11 @@ services:
       PORT: 8080
 
       # Eğer lokalda Railway DB'ye bağlanıyorsan bırak, yoksa lokal DB ayarlarını kullan
-      DB_HOST=switchyard.proxy.rlwy.net
-      DB_PORT=27164
-      DB_DATABASE=railway
-      DB_USERNAME=root
-      DB_PASSWORD=YtNTAAqzyzDiBCIGFwTRglORSvhfDauU
-      DB_SSL=false
+      DB_HOST: switchyard.proxy.rlwy.net        # RAILWAY_TCP_PROXY_DOMAIN
+      DB_PORT: 27164                            # RAILWAY_TCP_PROXY_PORT (örnek)
+      DB_DATABASE: railway
+      DB_USERNAME: root
+      DB_PASSWORD: YtNTAAqzyzDiBCIGFwTRglORSvhfDauU
 
       REDIS_HOST: redis
     depends_on:
