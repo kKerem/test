@@ -22,12 +22,17 @@ USER root
 RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist --no-scripts; fi \
     && chown -R www-data:www-data /var/www/html
 
-USER root
+# Startup script'i çalıştırılabilir yap
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
+# Railway PORT değişkenini kullan (varsayılan 8000)
 ENV PORT=8000
 
-EXPOSE ${PORT}
+EXPOSE 8000
 
-CMD ["sh", "-c", "php -S 0.0.0.0:${PORT} -t public"]
+# Railway'in PORT değişkenini kullanarak PHP built-in server başlat
+# Railway otomatik olarak PORT değişkenini set eder
+CMD ["/start.sh"]
 
 
