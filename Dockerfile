@@ -22,7 +22,7 @@ USER root
 RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist --no-scripts; fi \
     && chown -R www-data:www-data /var/www/html
 
-USER www-data
+USER root
 
 EXPOSE 9000
 
