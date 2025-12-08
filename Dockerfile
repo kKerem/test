@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
 WORKDIR /var/www/html
 
@@ -24,8 +24,10 @@ RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dis
 
 USER root
 
-EXPOSE 9000
+ENV PORT=8000
 
-CMD ["php-fpm"]
+EXPOSE ${PORT}
+
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT} -t public"]
 
 
