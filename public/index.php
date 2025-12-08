@@ -108,14 +108,35 @@ $router->get('/health', function () {
     return Response::json(['status' => 'ok']);
 });
 
-// Database debug endpoint (sadece development için)
+// Database debug endpoint (Railway debug için)
 $router->get('/debug/db-config', function () {
-    if (getenv('APP_ENV') !== 'local' && getenv('APP_DEBUG') !== 'true') {
-        http_response_code(403);
-        exit;
+    $config = \App\Core\Database::getConfig();
+    
+    // Environment variable'ları kontrol et
+    $envVars = [];
+    $checkVars = [
+        'MYSQL_URL',
+        'MYSQL_HOST',
+        'MYSQLHOST',
+        'MYSQL_DATABASE',
+        'MYSQLDATABASE',
+        'MYSQL_USER',
+        'MYSQLUSER',
+        'MYSQL_ROOT_PASSWORD',
+        'MYSQL_PASSWORD',
+        'MYSQLPASSWORD',
+        'RAILWAY_PRIVATE_DOMAIN',
+        'RAILWAY_TCP_PROXY_DOMAIN',
+        'RAILWAY_TCP_PROXY_PORT',
+        'MYSQL_PORT',
+        'MYSQLPORT',
+    ];
+    
+    foreach ($checkVars as $var) {
+        $value = getenv($var);
+        $envVars[$var] = $value !== false ? ($var === 'MYSQL_ROOT_PASSWORD' || $var === 'MYSQL_PASSWORD' || $var === 'MYSQLPASSWORD' ? '***' : $value) : 'not set';
     }
     
-    $config = \App\Core\Database::getConfig();
     return Response::json([
         'config' => [
             'host' => $config['host'],
@@ -124,14 +145,7 @@ $router->get('/debug/db-config', function () {
             'user' => $config['user'],
             'pass' => $config['pass'] ? '***' : null,
         ],
-        'env_vars' => [
-            'MYSQL_URL' => getenv('MYSQL_URL') ? 'set' : 'not set',
-            'MYSQL_HOST' => getenv('MYSQL_HOST') ?: getenv('MYSQLHOST') ?: 'not set',
-            'MYSQL_DATABASE' => getenv('MYSQL_DATABASE') ?: getenv('MYSQLDATABASE') ?: 'not set',
-            'MYSQL_USER' => getenv('MYSQL_USER') ?: getenv('MYSQLUSER') ?: 'not set',
-            'MYSQL_ROOT_PASSWORD' => getenv('MYSQL_ROOT_PASSWORD') ? 'set' : 'not set',
-            'RAILWAY_PRIVATE_DOMAIN' => getenv('RAILWAY_PRIVATE_DOMAIN') ?: 'not set',
-        ],
+        'env_vars' => $envVars,
     ]);
 });
 
