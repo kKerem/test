@@ -1,8 +1,5 @@
 FROM php:8.2-fpm
 
-ARG user=www-data
-ARG uid=1000
-
 WORKDIR /var/www/html
 
 RUN apt-get update && apt-get install -y \
@@ -18,15 +15,14 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-RUN groupadd -g ${uid} ${user} || true \
-    && useradd -u ${uid} -g ${user} -m ${user} || true \
-    && chown -R ${user}:${user} /var/www
+COPY --chown=www-data:www-data . /var/www/html
 
-USER ${user}
+# Composer işlemleri root ile (izin sorunlarını önlemek için), sonra sahipliği geri ver
+USER root
+RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist --no-scripts; fi \
+    && chown -R www-data:www-data /var/www/html
 
-COPY . /var/www/html
-
-RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist --no-scripts; fi
+USER www-data
 
 EXPOSE 9000
 
