@@ -108,6 +108,33 @@ $router->get('/health', function () {
     return Response::json(['status' => 'ok']);
 });
 
+// Database debug endpoint (sadece development için)
+$router->get('/debug/db-config', function () {
+    if (getenv('APP_ENV') !== 'local' && getenv('APP_DEBUG') !== 'true') {
+        http_response_code(403);
+        exit;
+    }
+    
+    $config = \App\Core\Database::getConfig();
+    return Response::json([
+        'config' => [
+            'host' => $config['host'],
+            'port' => $config['port'],
+            'db' => $config['db'],
+            'user' => $config['user'],
+            'pass' => $config['pass'] ? '***' : null,
+        ],
+        'env_vars' => [
+            'MYSQL_URL' => getenv('MYSQL_URL') ? 'set' : 'not set',
+            'MYSQL_HOST' => getenv('MYSQL_HOST') ?: getenv('MYSQLHOST') ?: 'not set',
+            'MYSQL_DATABASE' => getenv('MYSQL_DATABASE') ?: getenv('MYSQLDATABASE') ?: 'not set',
+            'MYSQL_USER' => getenv('MYSQL_USER') ?: getenv('MYSQLUSER') ?: 'not set',
+            'MYSQL_ROOT_PASSWORD' => getenv('MYSQL_ROOT_PASSWORD') ? 'set' : 'not set',
+            'RAILWAY_PRIVATE_DOMAIN' => getenv('RAILWAY_PRIVATE_DOMAIN') ?: 'not set',
+        ],
+    ]);
+});
+
 // Media files
 $router->get('/media/{filename}', function ($filename) {
     $filePath = __DIR__ . '/../storage/media/' . basename($filename);

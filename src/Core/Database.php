@@ -32,41 +32,67 @@ class Database
         $pass = null;
 
         // Railway değişkenleri varsa öncelik onları alacak
-        $railwayHost = self::env('MYSQL_HOST') ?? self::env('MYSQLHOST') ?? self::env('RAILWAY_PRIVATE_DOMAIN') ?? self::env('RAILWAY_TCP_PROXY_DOMAIN');
-        $railwayPort = self::env('MYSQL_PORT') ?? self::env('MYSQLPORT') ?? self::env('RAILWAY_TCP_PROXY_PORT');
-        $railwayDb = self::env('MYSQL_DATABASE') ?? self::env('MYSQLDATABASE');
-        $railwayUser = self::env('MYSQL_USER') ?? self::env('MYSQLUSER');
-        $railwayPass = self::env('MYSQL_PASSWORD') ?? self::env('MYSQLPASSWORD') ?? self::env('MYSQL_ROOT_PASSWORD');
-
-        // MYSQL_URL veya MYSQL_PUBLIC_URL varsa parse et ve Railway değerlerinin üzerine yaz
-        $url = self::env('MYSQL_URL') ?? self::env('MYSQL_PUBLIC_URL');
-        if ($url) {
-            $parsed = parse_url($url);
-            if (is_array($parsed)) {
-                $railwayHost = $parsed['host'] ?? $railwayHost;
-                $railwayPort = isset($parsed['port']) ? (string)$parsed['port'] : $railwayPort;
-                $railwayUser = $parsed['user'] ?? $railwayUser;
-                $railwayPass = $parsed['pass'] ?? $railwayPass;
-                if (($parsed['path'] ?? null) !== null) {
-                    $railwayDb = ltrim($parsed['path'], '/');
+        // Önce MYSQL_URL'i kontrol et (Railway otomatik olarak bunu sağlar)
+        $url = self::env('MYSQL_URL');
+        if ($url && !empty($url)) {
+            // Template değişkenleri içeriyorsa skip et (Railway henüz resolve etmemiş)
+            if (strpos($url, '${{') === false) {
+                $parsed = parse_url($url);
+                if (is_array($parsed) && isset($parsed['host'])) {
+                    $host = $parsed['host'];
+                    $port = isset($parsed['port']) ? (string)$parsed['port'] : '3306';
+                    $user = $parsed['user'] ?? null;
+                    $pass = $parsed['pass'] ?? null;
+                    if (isset($parsed['path'])) {
+                        $db = ltrim($parsed['path'], '/');
+                    }
                 }
             }
         }
 
-        $hasRailway = $railwayHost || $railwayPort || $railwayDb || $railwayUser || $railwayPass || $url;
+        // Eğer URL'den alamadıysak, tek tek değişkenleri kontrol et
+        if (!$host) {
+            $host = self::env('MYSQL_HOST') 
+                ?? self::env('MYSQLHOST') 
+                ?? self::env('RAILWAY_PRIVATE_DOMAIN');
+        }
+        
+        if (!$port) {
+            $port = self::env('MYSQL_PORT') 
+                ?? self::env('MYSQLPORT') 
+                ?? '3306';
+        }
+        
+        if (!$db) {
+            $db = self::env('MYSQL_DATABASE') 
+                ?? self::env('MYSQLDATABASE');
+        }
+        
+        if (!$user) {
+            $user = self::env('MYSQL_USER') 
+                ?? self::env('MYSQLUSER');
+        }
+        
+        if (!$pass) {
+            $pass = self::env('MYSQL_PASSWORD') 
+                ?? self::env('MYSQLPASSWORD') 
+                ?? self::env('MYSQL_ROOT_PASSWORD');
+        }
 
-        if ($hasRailway) {
-            $host = $railwayHost;
-            $port = $railwayPort;
-            $db = $railwayDb;
-            $user = $railwayUser;
-            $pass = $railwayPass;
-        } else {
-            // Railway yoksa klasik .env beklentilerine bak
+        // Railway değişkenleri yoksa klasik .env beklentilerine bak
+        if (!$host) {
             $host = self::env('DB_HOST');
+        }
+        if (!$port) {
             $port = self::env('DB_PORT');
+        }
+        if (!$db) {
             $db = self::env('DB_DATABASE');
+        }
+        if (!$user) {
             $user = self::env('DB_USERNAME');
+        }
+        if (!$pass) {
             $pass = self::env('DB_PASSWORD');
         }
 
@@ -78,6 +104,14 @@ class Database
             'user' => $user ?? 'root',
             'pass' => $pass ?? 'root',
         ];
+    }
+
+    /**
+     * Debug için config'i döndürür (sadece development için)
+     */
+    public static function getConfig(): array
+    {
+        return self::resolveConfig();
     }
 
     public static function connection(): PDO
@@ -97,11 +131,17 @@ class Database
                 self::$pdo = new PDO($dsn, $user, $pass, [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_TIMEOUT => 5,
                 ]);
                 self::ensureSchema(self::$pdo);
             } catch (PDOException $e) {
+                // Hata ayıklama için daha detaylı mesaj (production'da kaldırılabilir)
+                $errorMsg = 'Database connection failed';
+                if (getenv('APP_DEBUG') === 'true' || getenv('APP_ENV') === 'local') {
+                    $errorMsg .= ': ' . $e->getMessage() . ' (Host: ' . $host . ', Port: ' . $port . ', DB: ' . $db . ')';
+                }
                 http_response_code(500);
-                echo json_encode(['error' => 'Database connection failed']);
+                echo json_encode(['error' => $errorMsg]);
                 exit;
             }
         }
