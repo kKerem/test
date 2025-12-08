@@ -444,17 +444,17 @@
 
   <!-- Katmanlar Paneli (Editör açıkken sol panelde) -->
   <aside class="hidden w-[280px] bg-gray-900 border-r border-gray-800 p-4 flex flex-col gap-4 overflow-y-auto sticky top-0 h-screen self-start transition-all duration-300 collapsed:w-[70px] collapsed:p-2" id="layers-panel">
-    <div class="relative">
-      <button class="absolute top-4 right-2 w-8 h-8 border-none bg-gray-800 rounded-md cursor-pointer flex items-center justify-center text-slate-200 transition-all hover:bg-gray-700 hover:text-white" id="layers-toggle-btn" title="Katmanları daralt/genişlet">
+    <div class="flex items-center justify-between mb-2 collapsed:hidden">
+      <h1 class="text-lg text-slate-200">Katmanlar</h1>
+      <button class="w-8 h-8 border-none bg-gray-800 rounded-md cursor-pointer flex items-center justify-center text-slate-200 transition-all hover:bg-gray-700 hover:text-white" id="layers-toggle-btn" title="Katmanları daralt/genişlet">
         <i class="fas fa-chevron-left" id="layers-toggle-icon"></i>
       </button>
-      <button class="w-full mb-3 px-3 py-2 rounded-md border border-gray-700 bg-gray-800 text-slate-200 text-sm font-medium cursor-pointer transition-all hover:bg-gray-700 hover:border-gray-600 collapsed:hidden flex items-center justify-center gap-2" id="home-from-layers-btn" title="Ana Sayfaya Dön">
-        <i class="fas fa-home"></i>
-        <span>Ana Sayfa</span>
-      </button>
-      <h1 class="text-lg mb-2 text-slate-200 collapsed:hidden">Katmanlar</h1>
-      <div class="text-xs text-slate-500 collapsed:hidden">Sayfadaki tüm elemanları gözden geçir ve düzenle</div>
     </div>
+    <div class="text-xs text-slate-500 mb-3 collapsed:hidden">Sayfadaki tüm elemanları gözden geçir ve düzenle</div>
+    <button class="w-full mb-3 px-3 py-2 rounded-md border border-gray-700 bg-gray-800 text-slate-200 text-sm font-medium cursor-pointer transition-all hover:bg-gray-700 hover:border-gray-600 collapsed:hidden flex items-center justify-center gap-2" id="home-from-layers-btn" title="Ana Sayfaya Dön">
+      <i class="fas fa-home"></i>
+      <span>Ana Sayfa</span>
+    </button>
     <div id="layers-tree" class="p-2 collapsed:hidden"></div>
   </aside>
 
@@ -948,6 +948,19 @@
                   <option value="mesh">Mesh Gradient</option>
                   <option value="stripes">Stripes</option>
                   <option value="aurora">Aurora</option>
+                  <option value="particles">Particles</option>
+                  <option value="ripple">Ripple</option>
+                  <option value="float">Float</option>
+                  <option value="rotate">Rotate</option>
+                  <option value="slide">Slide</option>
+                  <option value="glow">Glow</option>
+                  <option value="breathe">Breathe</option>
+                  <option value="neon">Neon</option>
+                  <option value="fire">Fire</option>
+                  <option value="ocean">Ocean</option>
+                  <option value="space">Space</option>
+                  <option value="cosmic">Cosmic</option>
+                  <option value="sunset">Sunset</option>
                 </select>
                 <div style="padding:8px; background:#0f172a; border-radius:6px; border:1px solid #1e293b; font-size:11px; color:#64748b; margin-top:8px;">
                   <i class="fas fa-info-circle mr-1"></i>Seçilen efekt otomatik olarak uygulanır
@@ -2669,11 +2682,51 @@ function initGrapesJS() {
           0% { background-position: 0 0; }
           100% { background-position: 50px 50px; }
         }
-        @keyframes aurora {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        .bg-animation-gradient-flow {
+          @keyframes aurora {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+          }
+          @keyframes particles {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+          }
+          @keyframes ripple {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes slide {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+          }
+          @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+          }
+          @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
+          @keyframes cosmic {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+          }
+          @keyframes sunset {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 0%; }
+          }
+          .bg-animation-gradient-flow {
           background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
           background-size: 400% 400%;
           animation: gradientFlow 15s ease infinite;
@@ -4063,40 +4116,70 @@ function initGrapesJS() {
   // Undo/Redo
   const undoBtn = document.getElementById('undo-btn');
   const redoBtn = document.getElementById('redo-btn');
-  if (undoBtn) {
-    undoBtn.onclick = () => {
-      const um = editor.UndoManager;
-      if (um && um.hasUndo()) {
-        um.undo();
-      }
-    };
-  }
-  if (redoBtn) {
-    redoBtn.onclick = () => {
-      const um = editor.UndoManager;
-      if (um && um.hasRedo()) {
-        um.redo();
-      }
-    };
-  }
   
   // Undo/Redo durumunu güncelle
   const updateUndoRedoButtons = () => {
-    const um = editor.UndoManager;
-    if (undoBtn) {
-      undoBtn.disabled = !um || !um.hasUndo();
-      undoBtn.style.opacity = (!um || !um.hasUndo()) ? '0.5' : '1';
-    }
-    if (redoBtn) {
-      redoBtn.disabled = !um || !um.hasRedo();
-      redoBtn.style.opacity = (!um || !um.hasRedo()) ? '0.5' : '1';
+    try {
+      const um = editor.getUndoManager ? editor.getUndoManager() : editor.UndoManager;
+      if (undoBtn) {
+        const hasUndo = um && typeof um.hasUndo === 'function' && um.hasUndo();
+        undoBtn.disabled = !hasUndo;
+        undoBtn.style.opacity = hasUndo ? '1' : '0.5';
+        undoBtn.style.cursor = hasUndo ? 'pointer' : 'not-allowed';
+      }
+      if (redoBtn) {
+        const hasRedo = um && typeof um.hasRedo === 'function' && um.hasRedo();
+        redoBtn.disabled = !hasRedo;
+        redoBtn.style.opacity = hasRedo ? '1' : '0.5';
+        redoBtn.style.cursor = hasRedo ? 'pointer' : 'not-allowed';
+      }
+    } catch (e) {
+      console.error('UndoManager error:', e);
     }
   };
   
-  // Undo/Redo durumunu dinle
+  if (undoBtn) {
+    undoBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        const um = editor.getUndoManager ? editor.getUndoManager() : editor.UndoManager;
+        if (um && typeof um.undo === 'function' && um.hasUndo()) {
+          um.undo();
+          setTimeout(updateUndoRedoButtons, 100);
+        }
+      } catch (err) {
+        console.error('Undo error:', err);
+      }
+    };
+  }
+  
+  if (redoBtn) {
+    redoBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        const um = editor.getUndoManager ? editor.getUndoManager() : editor.UndoManager;
+        if (um && typeof um.redo === 'function' && um.hasRedo()) {
+          um.redo();
+          setTimeout(updateUndoRedoButtons, 100);
+        }
+      } catch (err) {
+        console.error('Redo error:', err);
+      }
+    };
+  }
+  
+  // Undo/Redo durumunu dinle - tüm önemli event'ler
   editor.on('update', updateUndoRedoButtons);
   editor.on('component:update', updateUndoRedoButtons);
-  updateUndoRedoButtons();
+  editor.on('component:add', updateUndoRedoButtons);
+  editor.on('component:remove', updateUndoRedoButtons);
+  editor.on('style:custom', updateUndoRedoButtons);
+  editor.on('storage:store', updateUndoRedoButtons);
+  
+  // İlk durumu ayarla
+  setTimeout(updateUndoRedoButtons, 300);
   
   // Accordion ve Style Manager entegrasyonu
   setupStyleManager();
@@ -4479,7 +4562,20 @@ function setupStyleManager() {
         'bg-animation-radial-pulse',
         'bg-animation-mesh',
         'bg-animation-stripes',
-        'bg-animation-aurora'
+        'bg-animation-aurora',
+        'bg-animation-particles',
+        'bg-animation-ripple',
+        'bg-animation-float',
+        'bg-animation-rotate',
+        'bg-animation-slide',
+        'bg-animation-glow',
+        'bg-animation-breathe',
+        'bg-animation-neon',
+        'bg-animation-fire',
+        'bg-animation-ocean',
+        'bg-animation-space',
+        'bg-animation-cosmic',
+        'bg-animation-sunset'
       ];
       allEffectClasses.forEach(cls => {
         const classes = selected.get('classes');
@@ -4535,7 +4631,20 @@ function setupStyleManager() {
         'bg-animation-radial-pulse',
         'bg-animation-mesh',
         'bg-animation-stripes',
-        'bg-animation-aurora'
+        'bg-animation-aurora',
+        'bg-animation-particles',
+        'bg-animation-ripple',
+        'bg-animation-float',
+        'bg-animation-rotate',
+        'bg-animation-slide',
+        'bg-animation-glow',
+        'bg-animation-breathe',
+        'bg-animation-neon',
+        'bg-animation-fire',
+        'bg-animation-ocean',
+        'bg-animation-space',
+        'bg-animation-cosmic',
+        'bg-animation-sunset'
       ];
       allEffectClasses.forEach(cls => {
         const classes = selected.get('classes');
@@ -4547,14 +4656,370 @@ function setupStyleManager() {
     }
   });
   
+  // Canvas frame'e efekt CSS'lerini ekle/güncelle
+  const ensureEffectStylesInCanvas = () => {
+    try {
+      const frame = editor.Canvas.getFrameEl();
+      if (frame && frame.contentDocument) {
+        const frameDoc = frame.contentDocument;
+        let effectStyleEl = frameDoc.getElementById('gjs-effect-styles');
+        if (!effectStyleEl) {
+          effectStyleEl = frameDoc.createElement('style');
+          effectStyleEl.id = 'gjs-effect-styles';
+          frameDoc.head.appendChild(effectStyleEl);
+        }
+        
+        effectStyleEl.textContent = `
+          @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+          }
+          @keyframes radialPulse {
+            0%, 100% { background-size: 100% 100%; opacity: 1; }
+            50% { background-size: 200% 200%; opacity: 0.8; }
+          }
+          @keyframes meshGradient {
+            0% { background-position: 0% 0%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
+          }
+          @keyframes stripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+          }
+          @keyframes aurora {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+          }
+          @keyframes particles {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+          }
+          @keyframes ripple {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes slide {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+          }
+          @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+          }
+          @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
+          @keyframes cosmic {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+          }
+          @keyframes sunset {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 0%; }
+          }
+          .bg-animation-gradient-flow {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab, #ee7752) !important;
+            background-size: 400% 400% !important;
+            animation: gradientFlow 8s ease infinite !important;
+          }
+          .bg-animation-wave {
+            background: linear-gradient(45deg, #1f2937 0%, #111827 100%) !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-wave::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: -100% !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+            animation: shimmer 3s infinite !important;
+          }
+          .bg-animation-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%) !important;
+            background-size: 200% 100% !important;
+            animation: shimmer 2s infinite !important;
+          }
+          .bg-animation-radial-pulse {
+            background: radial-gradient(circle, #1f2937 0%, #111827 100%) !important;
+            background-size: 100% 100% !important;
+            animation: radialPulse 4s ease-in-out infinite !important;
+          }
+          .bg-animation-mesh {
+            background: radial-gradient(at 0% 0%, #667eea 0px, transparent 50%), radial-gradient(at 100% 0%, #764ba2 0px, transparent 50%), radial-gradient(at 100% 100%, #f093fb 0px, transparent 50%), radial-gradient(at 0% 100%, #4facfe 0px, transparent 50%) !important;
+            background-size: 200% 200% !important;
+            animation: meshGradient 10s ease infinite !important;
+          }
+          .bg-animation-stripes {
+            background: repeating-linear-gradient(45deg, #667eea, #667eea 10px, #764ba2 10px, #764ba2 20px) !important;
+            background-size: 50px 50px !important;
+            animation: stripes 1s linear infinite !important;
+          }
+          .bg-animation-aurora {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab, #ee7752) !important;
+            background-size: 400% 400% !important;
+            animation: aurora 10s ease infinite !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-aurora::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -50% !important;
+            left: -50% !important;
+            width: 200% !important;
+            height: 200% !important;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%) !important;
+            animation: rotate 20s linear infinite !important;
+          }
+          .bg-animation-particles {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-particles::before,
+          .bg-animation-particles::after {
+            content: '' !important;
+            position: absolute !important;
+            width: 6px !important;
+            height: 6px !important;
+            background: rgba(255,255,255,0.8) !important;
+            border-radius: 50% !important;
+            animation: particles 6s infinite !important;
+          }
+          .bg-animation-particles::before {
+            left: 20% !important;
+            animation-delay: 0s !important;
+          }
+          .bg-animation-particles::after {
+            left: 60% !important;
+            animation-delay: 2s !important;
+          }
+          .bg-animation-ripple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-ripple::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            width: 200px !important;
+            height: 200px !important;
+            margin: -100px 0 0 -100px !important;
+            border-radius: 50% !important;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%) !important;
+            animation: ripple 2s infinite !important;
+          }
+          .bg-animation-ripple::after {
+            content: '' !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            width: 200px !important;
+            height: 200px !important;
+            margin: -100px 0 0 -100px !important;
+            border-radius: 50% !important;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%) !important;
+            animation: ripple 2s infinite 1s !important;
+          }
+          .bg-animation-float {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            animation: float 6s ease-in-out infinite !important;
+          }
+          .bg-animation-rotate {
+            background: conic-gradient(from 0deg, #667eea, #764ba2, #f093fb, #4facfe, #667eea, #667eea) !important;
+            background-size: 200% 200% !important;
+            animation: rotate 5s linear infinite !important;
+            position: relative !important;
+          }
+          .bg-animation-rotate::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.1) 100%) !important;
+            animation: rotate 10s linear infinite reverse !important;
+          }
+          .bg-animation-slide {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+            background-size: 200% 100% !important;
+            animation: slide 5s ease infinite !important;
+          }
+          .bg-animation-glow {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            animation: glow 1.5s ease-in-out infinite !important;
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.6), inset 0 0 30px rgba(118, 75, 162, 0.4) !important;
+          }
+          .bg-animation-breathe {
+            background: radial-gradient(circle at center, #667eea 0%, #764ba2 100%) !important;
+            animation: breathe 3s ease-in-out infinite !important;
+          }
+          .bg-animation-neon {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e) !important;
+            position: relative !important;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5), inset 0 0 20px rgba(102, 126, 234, 0.2) !important;
+            animation: glow 2s ease-in-out infinite !important;
+          }
+          .bg-animation-fire {
+            background: linear-gradient(180deg, #ff6b6b 0%, #ee5a6f 50%, #c92a2a 100%) !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-fire::before {
+            content: '' !important;
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: 50% !important;
+            background: linear-gradient(to top, rgba(255,255,255,0.3), transparent) !important;
+            animation: float 2s ease-in-out infinite !important;
+          }
+          .bg-animation-ocean {
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%) !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-ocean::before {
+            content: '' !important;
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: 30% !important;
+            background: linear-gradient(to top, rgba(255,255,255,0.2), transparent) !important;
+            animation: slide 4s ease-in-out infinite !important;
+          }
+          .bg-animation-space {
+            background: radial-gradient(circle at 20% 50%, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-space::before {
+            content: '' !important;
+            position: absolute !important;
+            width: 2px !important;
+            height: 2px !important;
+            background: white !important;
+            border-radius: 50% !important;
+            box-shadow: 100px 200px white, 300px 100px white, 500px 300px white, 200px 400px white !important;
+            animation: particles 10s infinite !important;
+          }
+          .bg-animation-cosmic {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%) !important;
+            background-size: 400% 400% !important;
+            animation: cosmic 8s ease infinite !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-cosmic::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -50% !important;
+            left: -50% !important;
+            width: 200% !important;
+            height: 200% !important;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 50%) !important;
+            animation: rotate 15s linear infinite !important;
+          }
+          .bg-animation-sunset {
+            background: linear-gradient(180deg, #ff6b6b 0%, #ffa500 25%, #ffd700 50%, #ff6347 75%, #ff1493 100%) !important;
+            background-size: 200% 200% !important;
+            animation: sunset 10s ease infinite !important;
+            position: relative !important;
+            overflow: hidden !important;
+          }
+          .bg-animation-sunset::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: 40% !important;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.3) 0%, transparent 70%) !important;
+            animation: float 4s ease-in-out infinite !important;
+          }
+        `;
+      }
+    } catch (e) {
+      console.error('Error adding effect styles to canvas:', e);
+    }
+  };
+  
+  // Canvas yüklendiğinde efekt CSS'lerini ekle - her zaman çalışsın
+  editor.on('load', () => {
+    setTimeout(ensureEffectStylesInCanvas, 100);
+    setTimeout(ensureEffectStylesInCanvas, 500);
+    setTimeout(ensureEffectStylesInCanvas, 1000);
+  });
+  editor.on('canvas:frame:load', () => {
+    setTimeout(ensureEffectStylesInCanvas, 100);
+    setTimeout(ensureEffectStylesInCanvas, 500);
+  });
+  editor.on('component:update', () => {
+    setTimeout(ensureEffectStylesInCanvas, 100);
+  });
+  editor.on('update', () => {
+    setTimeout(ensureEffectStylesInCanvas, 100);
+  });
+  
+  // İlk yüklemede de ekle
+  setTimeout(ensureEffectStylesInCanvas, 500);
+  setTimeout(ensureEffectStylesInCanvas, 1500);
+  
   // Background effect
   document.getElementById('background-effect')?.addEventListener('change', (e) => {
     const effect = e.target.value;
     const selected = editor.getSelected();
-    if (!selected) return;
+    if (!selected) {
+      alert('Lütfen önce bir element seçin');
+      return;
+    }
+    
+    // Canvas frame'e CSS'leri ekle
+    ensureEffectStylesInCanvas();
+    
+    // Background type'ı otomatik olarak "effect" yap
+    const bgTypeEl = document.getElementById('background-type');
+    if (bgTypeEl) {
+      bgTypeEl.value = 'effect';
+      // Effect section'ı göster
+      const colorSection = document.getElementById('background-color-section');
+      const imageSection = document.getElementById('background-image-section');
+      const effectSection = document.getElementById('background-effect-section');
+      if (colorSection) colorSection.style.display = 'none';
+      if (imageSection) imageSection.style.display = 'none';
+      if (effectSection) effectSection.style.display = 'block';
+    }
     
     if (effect) {
-      // Component'e class attribute olarak ekle
       const allEffectClasses = [
         'bg-animation-gradient-flow',
         'bg-animation-wave',
@@ -4562,7 +5027,20 @@ function setupStyleManager() {
         'bg-animation-radial-pulse',
         'bg-animation-mesh',
         'bg-animation-stripes',
-        'bg-animation-aurora'
+        'bg-animation-aurora',
+        'bg-animation-particles',
+        'bg-animation-ripple',
+        'bg-animation-float',
+        'bg-animation-rotate',
+        'bg-animation-slide',
+        'bg-animation-glow',
+        'bg-animation-breathe',
+        'bg-animation-neon',
+        'bg-animation-fire',
+        'bg-animation-ocean',
+        'bg-animation-space',
+        'bg-animation-cosmic',
+        'bg-animation-sunset'
       ];
       
       // Tüm efekt sınıflarını kaldır
@@ -4573,7 +5051,7 @@ function setupStyleManager() {
       // Yeni efekti ekle
       selected.addClass(`bg-animation-${effect}`);
       
-      // Data attribute olarak kaydet (geri yükleme için)
+      // Data attribute olarak kaydet
       selected.addAttributes({ 'data-bg-effect': effect });
       
       // Diğer arka plan stillerini temizle
@@ -4588,6 +5066,12 @@ function setupStyleManager() {
         });
         // Yeni efekti ekle
         view.el.classList.add(`bg-animation-${effect}`);
+        
+        // Style'ı da doğrudan ekle
+        const frame = editor.Canvas.getFrameEl();
+        if (frame && frame.contentDocument) {
+          ensureEffectStylesInCanvas();
+        }
       }
       
       // View'ı güncelle
@@ -4595,8 +5079,19 @@ function setupStyleManager() {
         view.render();
       }
       
-      // Canvas'ı güncelle
-      editor.refresh();
+      // Canvas'ı güncelle - birkaç kez tekrarla
+      setTimeout(() => {
+        ensureEffectStylesInCanvas();
+        editor.refresh();
+      }, 50);
+      setTimeout(() => {
+        ensureEffectStylesInCanvas();
+        editor.refresh();
+      }, 200);
+      setTimeout(() => {
+        ensureEffectStylesInCanvas();
+        editor.refresh();
+      }, 500);
     } else {
       // Efekt kaldırıldı
       const allEffectClasses = [
@@ -4606,7 +5101,20 @@ function setupStyleManager() {
         'bg-animation-radial-pulse',
         'bg-animation-mesh',
         'bg-animation-stripes',
-        'bg-animation-aurora'
+        'bg-animation-aurora',
+        'bg-animation-particles',
+        'bg-animation-ripple',
+        'bg-animation-float',
+        'bg-animation-rotate',
+        'bg-animation-slide',
+        'bg-animation-glow',
+        'bg-animation-breathe',
+        'bg-animation-neon',
+        'bg-animation-fire',
+        'bg-animation-ocean',
+        'bg-animation-space',
+        'bg-animation-cosmic',
+        'bg-animation-sunset'
       ];
       
       allEffectClasses.forEach(cls => {

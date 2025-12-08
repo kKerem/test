@@ -25,33 +25,49 @@ class Database
      */
     private static function resolveConfig(): array
     {
-        // Önce klasik .env beklentileri
-        $host = self::env('DB_HOST');
-        $port = self::env('DB_PORT');
-        $db = self::env('DB_DATABASE');
-        $user = self::env('DB_USERNAME');
-        $pass = self::env('DB_PASSWORD');
+        $host = null;
+        $port = null;
+        $db = null;
+        $user = null;
+        $pass = null;
 
-        // Railway/MySQL eklentisi isimleri
-        $host ??= self::env('MYSQL_HOST') ?? self::env('MYSQLHOST') ?? self::env('RAILWAY_PRIVATE_DOMAIN') ?? self::env('RAILWAY_TCP_PROXY_DOMAIN');
-        $port ??= self::env('MYSQL_PORT') ?? self::env('MYSQLPORT') ?? self::env('RAILWAY_TCP_PROXY_PORT');
-        $db ??= self::env('MYSQL_DATABASE') ?? self::env('MYSQLDATABASE');
-        $user ??= self::env('MYSQL_USER') ?? self::env('MYSQLUSER');
-        $pass ??= self::env('MYSQL_PASSWORD') ?? self::env('MYSQLPASSWORD') ?? self::env('MYSQL_ROOT_PASSWORD');
+        // Railway değişkenleri varsa öncelik onları alacak
+        $railwayHost = self::env('MYSQL_HOST') ?? self::env('MYSQLHOST') ?? self::env('RAILWAY_PRIVATE_DOMAIN') ?? self::env('RAILWAY_TCP_PROXY_DOMAIN');
+        $railwayPort = self::env('MYSQL_PORT') ?? self::env('MYSQLPORT') ?? self::env('RAILWAY_TCP_PROXY_PORT');
+        $railwayDb = self::env('MYSQL_DATABASE') ?? self::env('MYSQLDATABASE');
+        $railwayUser = self::env('MYSQL_USER') ?? self::env('MYSQLUSER');
+        $railwayPass = self::env('MYSQL_PASSWORD') ?? self::env('MYSQLPASSWORD') ?? self::env('MYSQL_ROOT_PASSWORD');
 
-        // MYSQL_URL veya MYSQL_PUBLIC_URL varsa parse et
+        // MYSQL_URL veya MYSQL_PUBLIC_URL varsa parse et ve Railway değerlerinin üzerine yaz
         $url = self::env('MYSQL_URL') ?? self::env('MYSQL_PUBLIC_URL');
         if ($url) {
             $parsed = parse_url($url);
             if (is_array($parsed)) {
-                $host ??= $parsed['host'] ?? null;
-                $port ??= isset($parsed['port']) ? (string)$parsed['port'] : null;
-                $user ??= $parsed['user'] ?? null;
-                $pass ??= $parsed['pass'] ?? null;
+                $railwayHost = $parsed['host'] ?? $railwayHost;
+                $railwayPort = isset($parsed['port']) ? (string)$parsed['port'] : $railwayPort;
+                $railwayUser = $parsed['user'] ?? $railwayUser;
+                $railwayPass = $parsed['pass'] ?? $railwayPass;
                 if (($parsed['path'] ?? null) !== null) {
-                    $db ??= ltrim($parsed['path'], '/');
+                    $railwayDb = ltrim($parsed['path'], '/');
                 }
             }
+        }
+
+        $hasRailway = $railwayHost || $railwayPort || $railwayDb || $railwayUser || $railwayPass || $url;
+
+        if ($hasRailway) {
+            $host = $railwayHost;
+            $port = $railwayPort;
+            $db = $railwayDb;
+            $user = $railwayUser;
+            $pass = $railwayPass;
+        } else {
+            // Railway yoksa klasik .env beklentilerine bak
+            $host = self::env('DB_HOST');
+            $port = self::env('DB_PORT');
+            $db = self::env('DB_DATABASE');
+            $user = self::env('DB_USERNAME');
+            $pass = self::env('DB_PASSWORD');
         }
 
         // Varsayılanlar (lokal geliştirme)
@@ -130,5 +146,4 @@ class Database
         }
     }
 }
-
 

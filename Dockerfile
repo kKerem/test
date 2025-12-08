@@ -1,18 +1,35 @@
-# Dockerfile (örnek)
-FROM php:8.2-cli
+FROM php:8.2-fpm
 
-RUN apt-get update && apt-get install -y git unzip libzip-dev \
-    && docker-php-ext-install zip pdo pdo_mysql
+ARG user=www-data
+ARG uid=1000
 
-WORKDIR /app
+WORKDIR /var/www/html
 
-# composer kurulumu (opsiyonel: eğer vendor repoda yoksa buildde kur)
-COPY composer.json composer.lock /app/
-ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
- && composer install --no-interaction --prefer-dist --no-scripts --no-dev || true
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY . /app
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Basit entrypoint: PORT env yoksa 3000 kullan
-CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-3000} -t public"]
+RUN groupadd -g ${uid} ${user} || true \
+    && useradd -u ${uid} -g ${user} -m ${user} || true \
+    && chown -R ${user}:${user} /var/www
+
+USER ${user}
+
+COPY . /var/www/html
+
+RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist --no-scripts; fi
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
+
+
